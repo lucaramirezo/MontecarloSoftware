@@ -1,0 +1,17 @@
+{
+{
+    "files": [
+        "Login.ui",
+        "main.py",
+        "ui_Login.py",
+        "Login.py",
+        "UserMainView.ui",
+        "ui_UserMainView.py",
+        "UserMainView.py",
+        "AdminMainView.ui",
+        "ui_AdminMainView.py",
+        "AdminMainView.py"
+    ]
+}
+
+}
