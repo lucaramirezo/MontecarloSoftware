@@ -58,7 +58,7 @@ class DAO:
             self.con.close()
 
     @DeprecationWarning
-    def __sql_query(self, sql):
+    def sql_query(self, sql):
         cursor = self.con.cursor()
 
         cursor.execute(sql)
