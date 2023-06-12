@@ -721,7 +721,6 @@ class Ui_AdminMainWindow(object):
         tableUsers = dao.sql_query( "SELECT login,GROUP_CONCAT(title) FROM Element as e, Assigned_Elements as ae,User as u where ae.element_UUID=e.UUID and u.UUID=ae.user_UUID GROUP BY user_UUID")
         row_count = len(tableUsers)
         col_count = max(len(item[1].split(',')) for item in tableUsers)
-        print(tableUsers)
         self.users_table.setRowCount(row_count)
         self.users_table.setColumnCount(col_count)
 
@@ -940,25 +939,11 @@ class Ui_AdminMainWindow(object):
         self.task_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Task Management", None))
         self.task_bt_search.setText(QCoreApplication.translate("AdminMainWindow", u"Search List", None))
         self.task_bt_edit.setText(QCoreApplication.translate("AdminMainWindow", u"EditList", None))
-        ___qtablewidgetitem = self.task_table.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated minimun", None));
-        ___qtablewidgetitem1 = self.task_table.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated maximun", None));
-        ___qtablewidgetitem2 = self.task_table.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated time", None));
-        ___qtablewidgetitem3 = self.task_table.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("AdminMainWindow", u"Time", None));
-        ___qtablewidgetitem4 = self.task_table.verticalHeaderItem(0)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("AdminMainWindow", u"Nouvelle ligne", None));
-        ___qtablewidgetitem5 = self.task_table.verticalHeaderItem(1)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("AdminMainWindow", u"Task1", None));
-        ___qtablewidgetitem6 = self.task_table.verticalHeaderItem(2)
-        ___qtablewidgetitem6.setText(QCoreApplication.translate("AdminMainWindow", u"Task3", None));
         self.budget_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Budget Management", None))
         self.budget_bt_search.setText(QCoreApplication.translate("AdminMainWindow", u"Search List", None))
         self.budget_bt_edit.setText(QCoreApplication.translate("AdminMainWindow", u"Edit List", None))
 
-        header_labels = [
+        header_labels_budget = [
                 QCoreApplication.translate("AdminMainWindow", u"User", None),
                 QCoreApplication.translate("AdminMainWindow", u"Title", None),
                 QCoreApplication.translate("AdminMainWindow", u"Estimated minimum", None),
@@ -967,10 +952,25 @@ class Ui_AdminMainWindow(object):
                 QCoreApplication.translate("AdminMainWindow", u"Completion time", None)
         ]
 
-        self.budget_table.setHorizontalHeaderLabels(header_labels)
+        self.budget_table.setHorizontalHeaderLabels(header_labels_budget)
         self.budget_table.resizeColumnsToContents()
         __sortingEnabled = self.budget_table.isSortingEnabled()
         self.budget_table.setSortingEnabled(__sortingEnabled)
+
+        header_labels_task = [
+                QCoreApplication.translate("AdminMainWindow", u"User", None),
+                QCoreApplication.translate("AdminMainWindow", u"Title", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated minimum", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated medium", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated maximum", None),
+                QCoreApplication.translate("AdminMainWindow", u"Creation time", None),
+                QCoreApplication.translate("AdminMainWindow", u"Completion time", None)
+        ]
+
+        self.task_table.setHorizontalHeaderLabels(header_labels_task)
+        self.task_table.resizeColumnsToContents()
+        __sortingEnabled = self.task_table.isSortingEnabled()
+        self.task_table.setSortingEnabled(__sortingEnabled)
 
         self.users_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Users", None))
         self.users_bt_user.setText(QCoreApplication.translate("AdminMainWindow", u"Users", None))
