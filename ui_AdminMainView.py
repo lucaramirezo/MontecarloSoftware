@@ -424,7 +424,7 @@ class Ui_AdminMainWindow(object):
                 est_mid = str(item[3])
                 est_high = str(item[4])
                 creation_time = str(item[5])
-                completion_time = str(item[6])
+                completion_time = str(item[6]) if item[6] is not None else "Not Completed"
 
                 user_item = QtWidgets.QTableWidgetItem(user)
                 title_item = QtWidgets.QTableWidgetItem(title)
@@ -595,7 +595,7 @@ class Ui_AdminMainWindow(object):
                 est_low = str(item[2])
                 est_mid = str(item[3])
                 est_high = str(item[4])
-                completion_time = str(item[5])
+                completion_time = str(item[5]) if item[5] is not None else "Not Completed"
 
                 user_item = QtWidgets.QTableWidgetItem(user)
                 title_item = QtWidgets.QTableWidgetItem(title)
@@ -716,9 +716,8 @@ class Ui_AdminMainWindow(object):
 
         self.users_table = QTableWidget(self.users_panel)
 
-
-
-        tableUsers = dao.sql_query( "SELECT login,GROUP_CONCAT(title) FROM Element as e, Assigned_Elements as ae,User as u where ae.element_UUID=e.UUID and u.UUID=ae.user_UUID GROUP BY user_UUID")
+        tableUsers = dao.sql_query(
+                "SELECT login, GROUP_CONCAT(title) FROM Element as e, Assigned_Elements as ae, User as u WHERE ae.element_UUID=e.UUID AND u.UUID=ae.user_UUID GROUP BY user_UUID")
         row_count = len(tableUsers)
         col_count = max(len(item[1].split(',')) for item in tableUsers)
         self.users_table.setRowCount(row_count)
@@ -730,9 +729,12 @@ class Ui_AdminMainWindow(object):
                         value_item = QtWidgets.QTableWidgetItem(value.strip())
                         value_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
                         value_item.setFlags(QtCore.Qt.ItemIsEnabled)
-                        value_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+                        value_item.setFlags(value_item.flags() & ~QtCore.Qt.ItemIsEditable)
                         self.users_table.setItem(row, col, value_item)
                         self.users_table.resizeRowToContents(row)
+
+        # Bloquear todas las celdas para edición
+        self.users_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         # Crear la lista de encabezados verticales
         row_headers = [str(row[0]) for row in tableUsers]
@@ -745,8 +747,7 @@ class Ui_AdminMainWindow(object):
         self.users_table.setHorizontalHeaderLabels(column_headers)
 
         self.users_table.setObjectName(u"users_table")
-        self.users_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-
+        self.users_table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.verticalLayout_18.addWidget(self.users_table)
 
 
