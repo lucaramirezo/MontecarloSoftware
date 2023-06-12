@@ -8,7 +8,7 @@ from PySide6 import QtWidgets, QtCore
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
-from Modelo import DAO
+from Modelo.DAO import DAO
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -24,6 +24,10 @@ from PySide6.QtWidgets import (QAbstractScrollArea, QApplication, QFrame, QHBoxL
 
 class Ui_AdminMainWindow(object):
     def setupUi(self, AdminMainWindow):
+
+        dao = DAO.get_instance(host='195.235.211.197', user='psi_grupo6', password='50K2f#k!wg^M',
+                                   database='psi_grupo6')
+
         if not AdminMainWindow.objectName():
             AdminMainWindow.setObjectName(u"AdminMainWindow")
         AdminMainWindow.resize(800, 588)
@@ -399,25 +403,73 @@ class Ui_AdminMainWindow(object):
         self.verticalLayout_21.setObjectName(u"verticalLayout_21")
         self.verticalLayout_21.setContentsMargins(0, 0, 0, 0)
         self.task_table = QTableWidget(self.task_table_container)
-        if (self.task_table.columnCount() < 4):
-            self.task_table.setColumnCount(4)
-        __qtablewidgetitem = QTableWidgetItem()
-        self.task_table.setHorizontalHeaderItem(0, __qtablewidgetitem)
-        __qtablewidgetitem1 = QTableWidgetItem()
-        self.task_table.setHorizontalHeaderItem(1, __qtablewidgetitem1)
-        __qtablewidgetitem2 = QTableWidgetItem()
-        self.task_table.setHorizontalHeaderItem(2, __qtablewidgetitem2)
-        __qtablewidgetitem3 = QTableWidgetItem()
-        self.task_table.setHorizontalHeaderItem(3, __qtablewidgetitem3)
-        if (self.task_table.rowCount() < 3):
-            self.task_table.setRowCount(3)
-        __qtablewidgetitem4 = QTableWidgetItem()
-        self.task_table.setVerticalHeaderItem(0, __qtablewidgetitem4)
-        __qtablewidgetitem5 = QTableWidgetItem()
-        self.task_table.setVerticalHeaderItem(1, __qtablewidgetitem5)
-        __qtablewidgetitem6 = QTableWidgetItem()
-        self.task_table.setVerticalHeaderItem(2, __qtablewidgetitem6)
+
+        tableTasks = dao.sql_query(
+                "SELECT u.login, e.title, e.est_low, e.est_mid, e.est_high, e.creation_time, e.completion_time "
+                "FROM Element as e, Assigned_Elements as ae, User as u "
+                "WHERE ae.element_UUID = e.UUID AND u.UUID = ae.user_UUID AND e.UUID_list_type "
+                "IN (SELECT UUID FROM List_Type WHERE e.element_type = 'task' OR e.element_type = 'tarea') "
+                "GROUP BY u.UUID, e.title")
+
+        row_count = len(tableTasks)
+        col_count = 7  # Número de columnas: usuario, título, est_low, est_mid, est_high, creation_time, completion_time
+
+        self.task_table.setRowCount(row_count)
+        self.task_table.setColumnCount(col_count)
+
+        for row, item in enumerate(tableTasks):
+                user = item[0]
+                title = item[1]
+                est_low = str(item[2])
+                est_mid = str(item[3])
+                est_high = str(item[4])
+                creation_time = str(item[5])
+                completion_time = str(item[6])
+
+                user_item = QtWidgets.QTableWidgetItem(user)
+                title_item = QtWidgets.QTableWidgetItem(title)
+                est_low_item = QtWidgets.QTableWidgetItem(est_low)
+                est_mid_item = QtWidgets.QTableWidgetItem(est_mid)
+                est_high_item = QtWidgets.QTableWidgetItem(est_high)
+                creation_time_item = QtWidgets.QTableWidgetItem(creation_time)
+                completion_time_item = QtWidgets.QTableWidgetItem(completion_time)
+
+                # Establecer alineación y edición/desactivación de los elementos
+                user_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+                user_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                title_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+                title_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_low_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_low_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_mid_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_mid_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_high_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_high_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                creation_time_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
+                creation_time_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                completion_time_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
+                completion_time_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                # Establecer los elementos en la tabla
+                self.task_table.setItem(row, 0, user_item)
+                self.task_table.setItem(row, 1, title_item)
+                self.task_table.setItem(row, 2, est_low_item)
+                self.task_table.setItem(row, 3, est_mid_item)
+                self.task_table.setItem(row, 4, est_high_item)
+                self.task_table.setItem(row, 5, creation_time_item)
+                self.task_table.setItem(row, 6, completion_time_item)
+
+                # Ajustar tamaño de la fila al contenido
+                self.task_table.resizeRowToContents(row)
+
+        # Crear lista de encabezados verticales
+        row_headers = ["" for _ in range(row_count)]
+
+        # Establecer encabezados verticales en la tabla
+        self.task_table.setVerticalHeaderLabels(row_headers)
+
         self.task_table.setObjectName(u"task_table")
+        self.task_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
         self.verticalLayout_21.addWidget(self.task_table)
 
@@ -524,35 +576,67 @@ class Ui_AdminMainWindow(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(1, 1, 1, 1)
         self.budget_table = QTableWidget(self.budget_table_container)
-        if (self.budget_table.columnCount() < 4):
-            self.budget_table.setColumnCount(4)
-        __qtablewidgetitem7 = QTableWidgetItem()
-        self.budget_table.setHorizontalHeaderItem(0, __qtablewidgetitem7)
-        __qtablewidgetitem8 = QTableWidgetItem()
-        self.budget_table.setHorizontalHeaderItem(1, __qtablewidgetitem8)
-        __qtablewidgetitem9 = QTableWidgetItem()
-        self.budget_table.setHorizontalHeaderItem(2, __qtablewidgetitem9)
-        __qtablewidgetitem10 = QTableWidgetItem()
-        self.budget_table.setHorizontalHeaderItem(3, __qtablewidgetitem10)
-        if (self.budget_table.rowCount() < 4):
-            self.budget_table.setRowCount(4)
-        __qtablewidgetitem11 = QTableWidgetItem()
-        self.budget_table.setVerticalHeaderItem(0, __qtablewidgetitem11)
-        __qtablewidgetitem12 = QTableWidgetItem()
-        self.budget_table.setVerticalHeaderItem(1, __qtablewidgetitem12)
-        __qtablewidgetitem13 = QTableWidgetItem()
-        self.budget_table.setVerticalHeaderItem(2, __qtablewidgetitem13)
-        __qtablewidgetitem14 = QTableWidgetItem()
-        self.budget_table.setVerticalHeaderItem(3, __qtablewidgetitem14)
-        __qtablewidgetitem15 = QTableWidgetItem()
-        self.budget_table.setItem(0, 0, __qtablewidgetitem15)
-        __qtablewidgetitem16 = QTableWidgetItem()
-        self.budget_table.setItem(0, 1, __qtablewidgetitem16)
-        __qtablewidgetitem17 = QTableWidgetItem()
-        self.budget_table.setItem(0, 3, __qtablewidgetitem17)
+
+        tableBudgets = dao.sql_query(
+                "SELECT u.login, e.title, e.est_low, e.est_mid, e.est_high, e.completion_time "
+                "FROM Element as e, Assigned_Elements as ae, User as u "
+                "WHERE ae.element_UUID = e.UUID AND u.UUID = ae.user_UUID AND e.element_type = 'budget' "
+                "GROUP BY u.UUID, e.title")
+
+        row_count = len(tableBudgets)
+        col_count = 6  # Número de columnas: títulos + est_low + est_mid + est_high + completion_time
+
+        self.budget_table.setRowCount(row_count)
+        self.budget_table.setColumnCount(col_count)
+
+        for row, item in enumerate(tableBudgets):
+                user = item[0]
+                title = item[1]
+                est_low = str(item[2])
+                est_mid = str(item[3])
+                est_high = str(item[4])
+                completion_time = str(item[5])
+
+                user_item = QtWidgets.QTableWidgetItem(user)
+                title_item = QtWidgets.QTableWidgetItem(title)
+                est_low_item = QtWidgets.QTableWidgetItem(est_low)
+                est_mid_item = QtWidgets.QTableWidgetItem(est_mid)
+                est_high_item = QtWidgets.QTableWidgetItem(est_high)
+                completion_time_item = QtWidgets.QTableWidgetItem(completion_time)
+
+                # Establecer alineación y edición/desactivación de los elementos
+                user_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+                user_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                title_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+                title_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_low_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_low_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_mid_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_mid_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                est_high_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+                est_high_item.setFlags(QtCore.Qt.ItemIsEnabled)
+                completion_time_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
+                completion_time_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                # Establecer los elementos en la tabla
+                self.budget_table.setItem(row, 0, user_item)
+                self.budget_table.setItem(row, 1, title_item)
+                self.budget_table.setItem(row, 2, est_low_item)
+                self.budget_table.setItem(row, 3, est_mid_item)
+                self.budget_table.setItem(row, 4, est_high_item)
+                self.budget_table.setItem(row, 5, completion_time_item)
+
+                # Ajustar tamaño de la fila al contenido
+                self.budget_table.resizeRowToContents(row)
+
+        # Crear lista de encabezados verticales
+        row_headers = ["" for _ in range(row_count)]
+
+        # Establecer encabezados verticales en la tabla
+        self.budget_table.setVerticalHeaderLabels(row_headers)
+
         self.budget_table.setObjectName(u"budget_table")
-        sizePolicy3.setHeightForWidth(self.budget_table.sizePolicy().hasHeightForWidth())
-        self.budget_table.setSizePolicy(sizePolicy3)
+        self.budget_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
         self.horizontalLayout_4.addWidget(self.budget_table)
 
@@ -614,6 +698,7 @@ class Ui_AdminMainWindow(object):
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.users_bt_user = QPushButton(self.users_options_container)
         self.users_bt_user.setObjectName(u"users_bt_user")
+        self.users_bt_user.setText("User")
 
         self.horizontalLayout_5.addWidget(self.users_bt_user)
 
@@ -631,29 +716,30 @@ class Ui_AdminMainWindow(object):
 
         self.users_table = QTableWidget(self.users_panel)
 
-        dao=DAO()
-        table = dao.sql_query("SELECT login,GROUP_CONCAT(title) FROM Element as e, Assigned_Elements as ae,User as u where ae.element_UUID=e.UUID and u.UUID=ae.user_UUID GROUP BY user_UUID")
-        row_count = len(table)
-        col_count = max(len(item[1].split(',')) for item in table)
 
-        self.tableWidget.setRowCount(row_count)
-        self.tableWidget.setColumnCount(col_count)
 
-        for row, item in enumerate(table):
+        tableUsers = dao.sql_query( "SELECT login,GROUP_CONCAT(title) FROM Element as e, Assigned_Elements as ae,User as u where ae.element_UUID=e.UUID and u.UUID=ae.user_UUID GROUP BY user_UUID")
+        row_count = len(tableUsers)
+        col_count = max(len(item[1].split(',')) for item in tableUsers)
+        print(tableUsers)
+        self.users_table.setRowCount(row_count)
+        self.users_table.setColumnCount(col_count)
+
+        for row, item in enumerate(tableUsers):
                 values = item[1].split(',')
                 for col, value in enumerate(values):
                         value_item = QtWidgets.QTableWidgetItem(value.strip())
                         value_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
                         value_item.setFlags(QtCore.Qt.ItemIsEnabled)
                         value_item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
-                        self.tableWidget.setItem(row, col, value_item)
-                        self.tableWidget.resizeRowToContents(row)
+                        self.users_table.setItem(row, col, value_item)
+                        self.users_table.resizeRowToContents(row)
 
         # Crear la lista de encabezados verticales
-        row_headers = [str(row[0]) for row in table]
+        row_headers = [str(row[0]) for row in tableUsers]
 
         # Establecer los encabezados verticales en la tabla
-        self.tableWidget.setVerticalHeaderLabels(row_headers)
+        self.users_table.setVerticalHeaderLabels(row_headers)
 
         self.users_table.setObjectName(u"users_table")
         self.users_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
@@ -870,142 +956,26 @@ class Ui_AdminMainWindow(object):
         ___qtablewidgetitem6.setText(QCoreApplication.translate("AdminMainWindow", u"Task3", None));
         self.budget_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Budget Management", None))
         self.budget_bt_search.setText(QCoreApplication.translate("AdminMainWindow", u"Search List", None))
-        self.budget_bt_edit.setText(QCoreApplication.translate("AdminMainWindow", u"EditList", None))
-        ___qtablewidgetitem7 = self.budget_table.horizontalHeaderItem(0)
-        ___qtablewidgetitem7.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated minimun", None));
-        ___qtablewidgetitem8 = self.budget_table.horizontalHeaderItem(1)
-        ___qtablewidgetitem8.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated maximun", None));
-        ___qtablewidgetitem9 = self.budget_table.horizontalHeaderItem(2)
-        ___qtablewidgetitem9.setText(QCoreApplication.translate("AdminMainWindow", u"Estimated time", None));
-        ___qtablewidgetitem10 = self.budget_table.horizontalHeaderItem(3)
-        ___qtablewidgetitem10.setText(QCoreApplication.translate("AdminMainWindow", u"Time", None));
-        ___qtablewidgetitem11 = self.budget_table.verticalHeaderItem(0)
-        ___qtablewidgetitem11.setText(QCoreApplication.translate("AdminMainWindow", u"Bugdet1", None));
-        ___qtablewidgetitem12 = self.budget_table.verticalHeaderItem(1)
-        ___qtablewidgetitem12.setText(QCoreApplication.translate("AdminMainWindow", u"Budget2", None));
-        ___qtablewidgetitem13 = self.budget_table.verticalHeaderItem(2)
-        ___qtablewidgetitem13.setText(QCoreApplication.translate("AdminMainWindow", u"Bugdet3", None));
-        ___qtablewidgetitem14 = self.budget_table.verticalHeaderItem(3)
-        ___qtablewidgetitem14.setText(QCoreApplication.translate("AdminMainWindow", u"Budget4", None));
+        self.budget_bt_edit.setText(QCoreApplication.translate("AdminMainWindow", u"Edit List", None))
 
+        header_labels = [
+                QCoreApplication.translate("AdminMainWindow", u"User", None),
+                QCoreApplication.translate("AdminMainWindow", u"Title", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated minimum", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated medium", None),
+                QCoreApplication.translate("AdminMainWindow", u"Estimated maximum", None),
+                QCoreApplication.translate("AdminMainWindow", u"Completion time", None)
+        ]
+
+        self.budget_table.setHorizontalHeaderLabels(header_labels)
+        self.budget_table.resizeColumnsToContents()
         __sortingEnabled = self.budget_table.isSortingEnabled()
-        self.budget_table.setSortingEnabled(False)
         self.budget_table.setSortingEnabled(__sortingEnabled)
 
         self.users_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Users", None))
-        self.users_bt_user.setText(QCoreApplication.translate("AdminMainWindow", u"User", None))
+        self.users_bt_user.setText(QCoreApplication.translate("AdminMainWindow", u"Users", None))
         self.users_bt_edit.setText(QCoreApplication.translate("AdminMainWindow", u"Edit User", None))
-        ___qtablewidgetitem15 = self.users_table.horizontalHeaderItem(0)
-        ___qtablewidgetitem15.setText(QCoreApplication.translate("AdminMainWindow", u"List1", None));
-        ___qtablewidgetitem16 = self.users_table.horizontalHeaderItem(1)
-        ___qtablewidgetitem16.setText(QCoreApplication.translate("AdminMainWindow", u"List2", None));
-        ___qtablewidgetitem17 = self.users_table.horizontalHeaderItem(2)
-        ___qtablewidgetitem17.setText(QCoreApplication.translate("AdminMainWindow", u"List3", None));
-        ___qtablewidgetitem18 = self.users_table.horizontalHeaderItem(3)
-        ___qtablewidgetitem18.setText(QCoreApplication.translate("AdminMainWindow", u"List4", None));
-        ___qtablewidgetitem19 = self.users_table.verticalHeaderItem(0)
-        ___qtablewidgetitem19.setText(QCoreApplication.translate("AdminMainWindow", u"User1", None));
-        ___qtablewidgetitem20 = self.users_table.verticalHeaderItem(1)
-        ___qtablewidgetitem20.setText(QCoreApplication.translate("AdminMainWindow", u"User2", None));
-        ___qtablewidgetitem21 = self.users_table.verticalHeaderItem(2)
-        ___qtablewidgetitem21.setText(QCoreApplication.translate("AdminMainWindow", u"User3", None));
-        ___qtablewidgetitem22 = self.users_table.verticalHeaderItem(3)
-        ___qtablewidgetitem22.setText(QCoreApplication.translate("AdminMainWindow", u"User4", None));
-        ___qtablewidgetitem23 = self.users_table.verticalHeaderItem(4)
-        ___qtablewidgetitem23.setText(QCoreApplication.translate("AdminMainWindow", u"User5", None));
-        ___qtablewidgetitem24 = self.users_table.verticalHeaderItem(5)
-        ___qtablewidgetitem24.setText(QCoreApplication.translate("AdminMainWindow", u"User6", None));
-        ___qtablewidgetitem25 = self.users_table.verticalHeaderItem(6)
-        ___qtablewidgetitem25.setText(QCoreApplication.translate("AdminMainWindow", u"User7", None));
-        ___qtablewidgetitem26 = self.users_table.verticalHeaderItem(7)
-        ___qtablewidgetitem26.setText(QCoreApplication.translate("AdminMainWindow", u"User8", None));
-        ___qtablewidgetitem27 = self.users_table.verticalHeaderItem(8)
-        ___qtablewidgetitem27.setText(QCoreApplication.translate("AdminMainWindow", u"User9", None));
-        ___qtablewidgetitem28 = self.users_table.verticalHeaderItem(9)
-        ___qtablewidgetitem28.setText(QCoreApplication.translate("AdminMainWindow", u"User10", None));
-
         __sortingEnabled1 = self.users_table.isSortingEnabled()
-        self.users_table.setSortingEnabled(False)
-        ___qtablewidgetitem29 = self.users_table.item(0, 0)
-        ___qtablewidgetitem29.setText(QCoreApplication.translate("AdminMainWindow", u"User1List1", None));
-        ___qtablewidgetitem30 = self.users_table.item(0, 1)
-        ___qtablewidgetitem30.setText(QCoreApplication.translate("AdminMainWindow", u"User1List2", None));
-        ___qtablewidgetitem31 = self.users_table.item(0, 2)
-        ___qtablewidgetitem31.setText(QCoreApplication.translate("AdminMainWindow", u"User1List3", None));
-        ___qtablewidgetitem32 = self.users_table.item(0, 3)
-        ___qtablewidgetitem32.setText(QCoreApplication.translate("AdminMainWindow", u"User1List4", None));
-        ___qtablewidgetitem33 = self.users_table.item(1, 0)
-        ___qtablewidgetitem33.setText(QCoreApplication.translate("AdminMainWindow", u"User2List1", None));
-        ___qtablewidgetitem34 = self.users_table.item(1, 1)
-        ___qtablewidgetitem34.setText(QCoreApplication.translate("AdminMainWindow", u"User2List2", None));
-        ___qtablewidgetitem35 = self.users_table.item(1, 2)
-        ___qtablewidgetitem35.setText(QCoreApplication.translate("AdminMainWindow", u"User2List3", None));
-        ___qtablewidgetitem36 = self.users_table.item(1, 3)
-        ___qtablewidgetitem36.setText(QCoreApplication.translate("AdminMainWindow", u"User2List4", None));
-        ___qtablewidgetitem37 = self.users_table.item(2, 0)
-        ___qtablewidgetitem37.setText(QCoreApplication.translate("AdminMainWindow", u"User3List1", None));
-        ___qtablewidgetitem38 = self.users_table.item(2, 1)
-        ___qtablewidgetitem38.setText(QCoreApplication.translate("AdminMainWindow", u"User3List2", None));
-        ___qtablewidgetitem39 = self.users_table.item(2, 2)
-        ___qtablewidgetitem39.setText(QCoreApplication.translate("AdminMainWindow", u"User3List3", None));
-        ___qtablewidgetitem40 = self.users_table.item(2, 3)
-        ___qtablewidgetitem40.setText(QCoreApplication.translate("AdminMainWindow", u"User3List4", None));
-        ___qtablewidgetitem41 = self.users_table.item(3, 0)
-        ___qtablewidgetitem41.setText(QCoreApplication.translate("AdminMainWindow", u"User4List1", None));
-        ___qtablewidgetitem42 = self.users_table.item(3, 1)
-        ___qtablewidgetitem42.setText(QCoreApplication.translate("AdminMainWindow", u"User4List2", None));
-        ___qtablewidgetitem43 = self.users_table.item(3, 2)
-        ___qtablewidgetitem43.setText(QCoreApplication.translate("AdminMainWindow", u"User4List3", None));
-        ___qtablewidgetitem44 = self.users_table.item(3, 3)
-        ___qtablewidgetitem44.setText(QCoreApplication.translate("AdminMainWindow", u"User4List4", None));
-        ___qtablewidgetitem45 = self.users_table.item(4, 0)
-        ___qtablewidgetitem45.setText(QCoreApplication.translate("AdminMainWindow", u"User5List1", None));
-        ___qtablewidgetitem46 = self.users_table.item(4, 1)
-        ___qtablewidgetitem46.setText(QCoreApplication.translate("AdminMainWindow", u"User5List2", None));
-        ___qtablewidgetitem47 = self.users_table.item(4, 2)
-        ___qtablewidgetitem47.setText(QCoreApplication.translate("AdminMainWindow", u"User5List3", None));
-        ___qtablewidgetitem48 = self.users_table.item(4, 3)
-        ___qtablewidgetitem48.setText(QCoreApplication.translate("AdminMainWindow", u"User5List4", None));
-        ___qtablewidgetitem49 = self.users_table.item(5, 0)
-        ___qtablewidgetitem49.setText(QCoreApplication.translate("AdminMainWindow", u"User6List1", None));
-        ___qtablewidgetitem50 = self.users_table.item(5, 1)
-        ___qtablewidgetitem50.setText(QCoreApplication.translate("AdminMainWindow", u"User6List2", None));
-        ___qtablewidgetitem51 = self.users_table.item(5, 2)
-        ___qtablewidgetitem51.setText(QCoreApplication.translate("AdminMainWindow", u"User6List3", None));
-        ___qtablewidgetitem52 = self.users_table.item(5, 3)
-        ___qtablewidgetitem52.setText(QCoreApplication.translate("AdminMainWindow", u"User6List4", None));
-        ___qtablewidgetitem53 = self.users_table.item(6, 0)
-        ___qtablewidgetitem53.setText(QCoreApplication.translate("AdminMainWindow", u"User7List1", None));
-        ___qtablewidgetitem54 = self.users_table.item(6, 1)
-        ___qtablewidgetitem54.setText(QCoreApplication.translate("AdminMainWindow", u"User7List2", None));
-        ___qtablewidgetitem55 = self.users_table.item(6, 2)
-        ___qtablewidgetitem55.setText(QCoreApplication.translate("AdminMainWindow", u"User7List3", None));
-        ___qtablewidgetitem56 = self.users_table.item(6, 3)
-        ___qtablewidgetitem56.setText(QCoreApplication.translate("AdminMainWindow", u"User7List4", None));
-        ___qtablewidgetitem57 = self.users_table.item(7, 0)
-        ___qtablewidgetitem57.setText(QCoreApplication.translate("AdminMainWindow", u"User8List1", None));
-        ___qtablewidgetitem58 = self.users_table.item(7, 1)
-        ___qtablewidgetitem58.setText(QCoreApplication.translate("AdminMainWindow", u"User8List2", None));
-        ___qtablewidgetitem59 = self.users_table.item(7, 2)
-        ___qtablewidgetitem59.setText(QCoreApplication.translate("AdminMainWindow", u"User8List3", None));
-        ___qtablewidgetitem60 = self.users_table.item(7, 3)
-        ___qtablewidgetitem60.setText(QCoreApplication.translate("AdminMainWindow", u"User8List4", None));
-        ___qtablewidgetitem61 = self.users_table.item(8, 0)
-        ___qtablewidgetitem61.setText(QCoreApplication.translate("AdminMainWindow", u"User9List1", None));
-        ___qtablewidgetitem62 = self.users_table.item(8, 1)
-        ___qtablewidgetitem62.setText(QCoreApplication.translate("AdminMainWindow", u"User9List2", None));
-        ___qtablewidgetitem63 = self.users_table.item(8, 2)
-        ___qtablewidgetitem63.setText(QCoreApplication.translate("AdminMainWindow", u"User9List3", None));
-        ___qtablewidgetitem64 = self.users_table.item(8, 3)
-        ___qtablewidgetitem64.setText(QCoreApplication.translate("AdminMainWindow", u"User9List4", None));
-        ___qtablewidgetitem65 = self.users_table.item(9, 0)
-        ___qtablewidgetitem65.setText(QCoreApplication.translate("AdminMainWindow", u"User10List1", None));
-        ___qtablewidgetitem66 = self.users_table.item(9, 1)
-        ___qtablewidgetitem66.setText(QCoreApplication.translate("AdminMainWindow", u"User10List2", None));
-        ___qtablewidgetitem67 = self.users_table.item(9, 2)
-        ___qtablewidgetitem67.setText(QCoreApplication.translate("AdminMainWindow", u"User10List3", None));
-        ___qtablewidgetitem68 = self.users_table.item(9, 3)
-        ___qtablewidgetitem68.setText(QCoreApplication.translate("AdminMainWindow", u"User10List4", None));
         self.users_table.setSortingEnabled(__sortingEnabled1)
 
         self.settings_main_title.setText(QCoreApplication.translate("AdminMainWindow", u"Account Settings", None))

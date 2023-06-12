@@ -6,9 +6,9 @@ import mariadb
 import mysql.connector
 from typing import Optional
 
-from ListType import ListType
-from Element import Element
-from User import User
+from Modelo.ListType import ListType
+from Modelo.Element import Element
+from Modelo.User import User
 
 
 def CachedFunction(func):
@@ -57,7 +57,7 @@ class DAO:
         if self.con:
             self.con.close()
 
-    @DeprecationWarning
+
     def sql_query(self, sql):
         cursor = self.con.cursor()
 
