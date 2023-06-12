@@ -740,6 +740,10 @@ class Ui_AdminMainWindow(object):
         # Establecer los encabezados verticales en la tabla
         self.users_table.setVerticalHeaderLabels(row_headers)
 
+        # Establecer los encabezados horizontales
+        column_headers = [f'List {i}' for i in range(1, col_count+1)]
+        self.users_table.setHorizontalHeaderLabels(column_headers)
+
         self.users_table.setObjectName(u"users_table")
         self.users_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
